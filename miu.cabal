@@ -1,0 +1,68 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           miu
+version:        0.1.0.0
+synopsis:       A personal exploration of the MIU formal system.
+description:    Please see the README on GitHub at <https://github.com/petrem/miu#readme>
+category:       Math
+homepage:       https://github.com/petrem/miu#readme
+bug-reports:    https://github.com/petrem/miu/issues
+author:         Petre Mierluțiu
+maintainer:     petrem@github
+copyright:      2020 Petre Mierluțiu
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/petrem/miu
+
+library
+  exposed-modules:
+      Lib
+      Miu
+  other-modules:
+      Paths_miu
+  hs-source-dirs:
+      src
+  ghc-options: -Wall
+  build-depends:
+      base >=4.7 && <5
+  default-language: Haskell2010
+
+executable miu-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_miu
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      base >=4.7 && <5
+    , miu
+  default-language: Haskell2010
+
+test-suite miu-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      LibSpec
+      MiuSpec
+      Paths_miu
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall
+  build-depends:
+      base >=4.7 && <5
+    , hspec
+    , hspec-discover
+    , miu
+  default-language: Haskell2010

@@ -1,0 +1,56 @@
+name:                miu
+version:             0.1.0.0
+github:              "petrem/miu"
+license:             BSD3
+author:              "Petre Mierluțiu"
+maintainer:          "petrem@github"
+copyright:           "2020 Petre Mierluțiu"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+synopsis:            A personal exploration of the MIU formal system.
+category:            Math
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on GitHub at <https://github.com/petrem/miu#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  ghc-options: -Wall
+  exposed-modules:
+    - Lib
+    - Miu
+
+executables:
+  miu-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - miu
+
+tests:
+  miu-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    dependencies:
+    - miu
+    - hspec
+    - hspec-discover
