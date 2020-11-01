@@ -35,6 +35,7 @@ spec = do
       [ ("does not start with M", "UI", [])
       , ("does not end with I", "MU", [])
       , ("does not end with I", "MIU", [])
+      , ("just M", "M", [])
       , ("adds U after I", "MI", ["MIU"])
       , ("adds U after I", "MII", ["MIIU"])
       , ("adds U after I", "MIUI", ["MIUIU"])
@@ -42,6 +43,7 @@ spec = do
 
     rule2Cases =
       [ ("does not start with M", "UI", [])
+      , ("just M", "M", [])
       , ("doubles string after M", "MI", ["MII"])
       , ("doubles string after M", "MU", ["MUU"])
       , ("doubles string after M", "MIU", ["MIUIU"])
@@ -52,6 +54,7 @@ spec = do
     rule3Cases =
       [ ("does not start with M", "UI", [])
       , ("does not start with M", "UIII", [])
+      , ("just M", "M", [])
       , ("cannot apply", "MI", [])
       , ("cannot apply", "MII", [])
       , ("cannot apply", "MIUII", [])
@@ -65,6 +68,7 @@ spec = do
     rule4Cases =
       [ ("does not start with M", "UI", [])
       , ("does not start with M", "UUII", [])
+      , ("just M", "M", [])
       , ("cannot apply", "MU", [])
       , ("cannot apply", "MUIU", [])
       , ("removes UU", "MUU", ["M"])

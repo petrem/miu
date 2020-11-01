@@ -7,7 +7,7 @@ module Miu
   , rule2
   , rule3
   , rule4
---  , deriveTheorems
+  , deriveTheorems
   ) where
 
 --import Control.Monad (join)
@@ -36,11 +36,13 @@ readTheorem = Theorem . readLetters
 
 -- (I) MxI -> MxIU
 rule1 :: Theorem -> [Theorem]
+rule1 (Theorem [M]) = []
 rule1 (Theorem t@(M:xs)) | last xs == I = [Theorem (t ++ [U])]
 rule1 _ = []
 
 -- (II) Mx -> Mxx
 rule2 :: Theorem -> [Theorem]
+rule2 (Theorem [M]) = []
 rule2 (Theorem t@(M:xs)) = [Theorem (t ++ xs)]
 rule2 _ = []
 
@@ -55,20 +57,15 @@ rule4 (Theorem (M:ls)) = map (Theorem . (M:)) $ replaceSubstrings [U, U] [] ls
 rule4 _ = []
 
 
--- deriveNextTheorems :: Theorem -> Either String [Theorem]
--- deriveNextTheorems t@(Theorem ls) = sequenceA $ filter isRight $ rules <*> pure t
---   where rules = concat [ [rule1]
---                        , [rule2]
---                        , [rule3 pos | pos <- [0..length ls]]
---                        , [rule4 pos | pos <- [0..length ls]]
---                        ]
-
--- deriveTheorems :: Either String [Theorem] -> Either String [[Theorem]]
--- --deriveTheorems ts = join $ (traverse deriveNextTheorems) <$> ts
--- deriveTheorems ts = traverse deriveNextTheorems =<< ts
+deriveTheorems :: [Theorem] -> [[Theorem]]
+deriveTheorems = iterate deriveNextTheorems
+  where deriveNextTheorems ts = concat $ [rule1, rule2, rule3, rule4] <*> ts
 
 
 -- TODO:
 -- - make Theorem an instance of Data.ListLike ?
 -- - should Theorem just be a newtype of Letters? Should it be more generic, `data Theorem a = Theorem a` or something?
--- - rule3 and rule4 are very ugly... and with redundant code
+-- - add a write monad to log what rules where applied at each step?
+-- - definitely make it more efficient:
+--    - remove identicaly theorems from derivation step
+--    - cut loops, don't derive previously seen theorems
