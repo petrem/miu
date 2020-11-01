@@ -7,17 +7,13 @@ module Miu
   , rule2
   , rule3
   , rule4
-  , deriveTheorems
+--  , deriveTheorems
   ) where
 
-import Control.Monad (join)
-import Data.Either (isRight)
-import Data.Traversable (traverse)
+--import Control.Monad (join)
+--import Data.Traversable (traverse)
 
-import Lib
-  ( getSegment
-  , replaceSegment
-  )
+import Lib (replaceSubstrings)
 
 
 data Letter = M | I | U deriving (Eq, Show)
@@ -39,39 +35,37 @@ readTheorem = Theorem . readLetters
 -- MIU Rules
 
 -- (I) MxI -> MxIU
-rule1 :: Theorem -> Either String Theorem
-rule1 (Theorem t@(M:xs)) | last xs == I = Right $ Theorem $ t ++ [U]
-rule1 t = Left $ "Cannot apply (I) to " ++ show t
+rule1 :: Theorem -> [Theorem]
+rule1 (Theorem t@(M:xs)) | last xs == I = [Theorem (t ++ [U])]
+rule1 _ = []
 
 -- (II) Mx -> Mxx
-rule2 :: Theorem -> Either String Theorem
-rule2 (Theorem t@(M:xs)) = Right $ Theorem (t ++ xs)
-rule2 t = Left $ "Cannot apply (II) to " ++ show t
+rule2 :: Theorem -> [Theorem]
+rule2 (Theorem t@(M:xs)) = [Theorem (t ++ xs)]
+rule2 _ = []
 
 -- (III) MxIIIy -> MxUy
-rule3 :: Int -> Theorem -> Either String Theorem
-rule3 pos (Theorem (M:xs))
-  | getSegment (pos-1) 3 xs == (Right $ readLetters "III") = Theorem <$> (Right (M:) <*> replaceSegment (pos-1) 3 xs (readLetters "U"))
-rule3 pos t = Left $ "Cannot apply (III) to " ++ show t ++ " at " ++ show pos
+rule3 :: Theorem -> [Theorem]
+rule3 (Theorem (M:ls)) = map (Theorem . (M:)) $ replaceSubstrings [I, I, I] [U] ls
+rule3 _ = []
 
 -- (IV) MxUUy -> Mxy
-rule4 :: Int -> Theorem -> Either String Theorem
-rule4 pos (Theorem (M:xs))
-  | getSegment (pos-1) 2 xs == (Right $ readLetters "UU") = Theorem <$> (Right (M:) <*> replaceSegment (pos-1) 2 xs [])
-rule4 pos t = Left $ "Cannot apply (IV) to " ++ show t ++ " at " ++ show pos
+rule4 :: Theorem -> [Theorem]
+rule4 (Theorem (M:ls)) = map (Theorem . (M:)) $ replaceSubstrings [U, U] [] ls
+rule4 _ = []
 
 
-deriveNextTheorems :: Theorem -> Either String [Theorem]
-deriveNextTheorems t@(Theorem ls) = sequenceA $ filter isRight $ rules <*> pure t
-  where rules = concat [ [rule1]
-                       , [rule2]
-                       , [rule3 pos | pos <- [0..length ls]]
-                       , [rule4 pos | pos <- [0..length ls]]
-                       ]
+-- deriveNextTheorems :: Theorem -> Either String [Theorem]
+-- deriveNextTheorems t@(Theorem ls) = sequenceA $ filter isRight $ rules <*> pure t
+--   where rules = concat [ [rule1]
+--                        , [rule2]
+--                        , [rule3 pos | pos <- [0..length ls]]
+--                        , [rule4 pos | pos <- [0..length ls]]
+--                        ]
 
-deriveTheorems :: Either String [Theorem] -> Either String [[Theorem]]
---deriveTheorems ts = join $ (traverse deriveNextTheorems) <$> ts
-deriveTheorems ts = traverse deriveNextTheorems =<< ts
+-- deriveTheorems :: Either String [Theorem] -> Either String [[Theorem]]
+-- --deriveTheorems ts = join $ (traverse deriveNextTheorems) <$> ts
+-- deriveTheorems ts = traverse deriveNextTheorems =<< ts
 
 
 -- TODO:

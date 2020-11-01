@@ -9,6 +9,8 @@ import Lib
   ( isSegmentOf
   , getSegment
   , replaceSegment
+  , findSubstrings
+  , replaceSubstrings
   )
 
 -- main :: IO ()
@@ -19,12 +21,13 @@ spec = do
   describe "isSegmentOf" $ for_ isSegmentOfCases isSegmentOfTest
   describe "getSegment" $ for_ getSegmentCases getSegmentTest
   describe "replaceSegment" $ for_ replaceSegmentCases replaceSegmentTest
-
+  describe "findSubstrings" $ for_ findSubstringsCases findSubstringsTest
+  describe "replaceSubstrings" $ for_ replaceSubstringsCases replaceSubstringsTest
   where
     isSegmentOfTest (l, pos, len, xs, expected) = it description assertion
       where
         description = l ++ " pos: " ++ show pos ++ " len: " ++ show len ++ " in: " ++ show xs
-        assertion = (isSegmentOf pos len xs) `shouldSatisfy` expected
+        assertion = isSegmentOf pos len xs `shouldSatisfy` expected
 
     isSegmentOfCases :: [(String, Int, Int, [Int], (Either a Bool) -> Bool)]
     isSegmentOfCases =
@@ -52,7 +55,7 @@ spec = do
     getSegmentTest (l, pos, len, xs, expected) = it description assertion
       where
         description = l ++ " pos: " ++ show pos ++ " len: " ++ show len ++ " in: " ++ show xs
-        assertion = (getSegment pos len xs) `shouldSatisfy` expected
+        assertion = getSegment pos len xs `shouldSatisfy` expected
 
     getSegmentCases :: [(String, Int, Int, [Int], (Either a [Int]) -> Bool)]
     getSegmentCases =
@@ -79,8 +82,8 @@ spec = do
 
     replaceSegmentTest (l, pos, len, xs, ys, expected) = it description assertion
       where
-        description = l ++ "pos: " ++ show pos ++ " len: " ++ show len ++ " in: " ++ show xs ++ " with " ++ show ys
-        assertion = (replaceSegment pos len xs ys) `shouldSatisfy` expected
+        description = l ++ " pos: " ++ show pos ++ " len: " ++ show len ++ " in: " ++ show xs ++ " with " ++ show ys
+        assertion = replaceSegment pos len xs ys `shouldSatisfy` expected
 
     replaceSegmentCases :: [(String, Int, Int, [Int], [Int], (Either a [Int]) -> Bool)]
     replaceSegmentCases =
@@ -105,6 +108,56 @@ spec = do
       , ("overlapping", 1, 3, [1,2,3], [4], isLeft)
       , ("overlapping", 2, 2, [1,2,3], [4], isLeft)
       , ("after", 3, 1, [1,2,3], [4], isLeft)
+      ]
+
+    findSubstringsTest (l, needle, haystack, expected) = it description assertion
+      where
+        description = l ++ ": '" ++ needle ++ "' in '" ++ haystack ++ "'"
+        assertion = findSubstrings needle haystack `shouldBe` expected
+
+    findSubstringsCases =
+      [ ("empty haystack", "", "", [0])
+      , ("empty haystack", "abc", "", [])
+      , ("empty needle", "", "a", [0,1])
+      , ("empty needle", "", "abc", [0,1,2,3])
+      , ("single match", "abc", "abc", [0])
+      , ("single match", "abc", "abcd", [0])
+      , ("single match", "abc", "zabc", [1])
+      , ("single match", "abc", "zabcd", [1])
+      , ("multiple matches", "abc", "abcabc", [0,3])
+      , ("multiple matches", "abc", "abcxabc", [0,4])
+      , ("multiple matches", "abc", "zabcabcd", [1,4])
+      , ("multiple overlapped matches", "aba", "abababa", [0,2,4])
+      , ("no matches", "abc", "ab", [])
+      , ("no matches", "abc", "abbc", [])
+      , ("no matches", "abc", "xbcab", [])
+      ]
+
+    replaceSubstringsTest (l, needle, replacement, haystack, expected) = it description assertion
+      where
+        description = l ++ ": '" ++ needle ++ "' with '" ++ replacement ++ "' in '" ++ haystack ++ "'"
+        assertion = replaceSubstrings needle replacement haystack `shouldBe` expected
+
+    replaceSubstringsCases =
+      [ ("empty haystack", "", "", "", [""])
+      , ("empty haystack", "abc", "x", "", [])
+      , ("empty needle", "", "x", "a", ["xa", "ax"])
+      , ("empty needle", "", "xy", "abc", ["xyabc", "axybc", "abxyc", "abcxy"])
+      , ("single match", "abc", "x", "abc", ["x"])
+      , ("single match", "abc", "xy", "abcd", ["xyd"])
+      , ("single match", "abc", "x", "zabc", ["zx"])
+      , ("single match", "abc", "x", "zabcd", ["zxd"])
+      , ("multiple matches", "abc", "x", "abcabc", ["xabc", "abcx"])
+      , ("multiple matches", "abc", "x", "abczabc", ["xzabc", "abczx"])
+      , ("multiple matches", "abc", "x", "zabcabcd", ["zxabcd", "zabcxd"])
+      , ("multiple overlapped matches", "aba", "x", "abababa", ["xbaba", "abxba", "ababx"])
+      , ("single match with empty string", "abc", "", "abc", [""])
+      , ("single match with empty string", "abc", "", "abcd", ["d"])
+      , ("single match with empty string", "abc", "", "zabc", ["z"])
+      , ("single match with empty string", "abc", "", "zabcd", ["zd"])
+      , ("no matches", "abc", "x", "ab", [])
+      , ("no matches", "abc", "x", "abbc", [])
+      , ("no matches", "abc", "x", "xbcab", [])
       ]
 
 matchesRight :: (Eq b) => b -> Either a b -> Bool
