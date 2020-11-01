@@ -27,5 +27,6 @@ isSegmentOf 1 0 [] = Right True -- empty segmnet just after empty list still ok
 isSegmentOf pos len xs = Right $ pos + len <= length xs
 
 
+
 -- TODO:
 -- - redefine isSegmentOf to return strictly Bool (if not used elsewhere), replacing False for Left error?

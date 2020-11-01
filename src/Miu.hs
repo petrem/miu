@@ -3,15 +3,17 @@
 module Miu
   ( Theorem
   , readTheorem
-  , getLetters
-  , readLetters
   , rule1
   , rule2
   , rule3
   , rule4
+  , deriveTheorems
   ) where
 
---import Data.Either
+import Control.Monad (join)
+import Data.Either (isRight)
+import Data.Traversable (traverse)
+
 import Lib
   ( getSegment
   , replaceSegment
@@ -19,9 +21,7 @@ import Lib
 
 
 data Letter = M | I | U deriving (Eq, Show)
-type Letters = [Letter]
-data Theorem = Theorem Letters deriving (Eq, Show)
---newtype Theorem = Theorem {unTheorem letters :: Letters}
+data Theorem = Theorem [Letter] deriving (Eq, Show)
 
 readLetter :: Char -> Letter
 readLetter c = case c of 'M' -> M
@@ -29,17 +29,14 @@ readLetter c = case c of 'M' -> M
                          'U' -> U
                          _ -> error "Invalid letter"
 
-readLetters :: String -> Letters
+readLetters :: String -> [Letter]
 readLetters = map readLetter
 
 readTheorem :: String -> Theorem
 readTheorem = Theorem . readLetters
 
-getLetters :: Theorem -> Letters
-getLetters (Theorem xs) = xs
 
-
--- Rules
+-- MIU Rules
 
 -- (I) MxI -> MxIU
 rule1 :: Theorem -> Either String Theorem
@@ -57,11 +54,23 @@ rule3 pos (Theorem (M:xs))
   | getSegment (pos-1) 3 xs == (Right $ readLetters "III") = Theorem <$> (Right (M:) <*> ((replaceSegment (pos-1) 3 xs $ readLetters "U")))
 rule3 pos t = Left $ "Cannot apply (III) to " ++ (show t) ++ " at " ++ show pos
 
--- -- (IV) MxUUy -> Mxy
+-- (IV) MxUUy -> Mxy
 rule4 :: Int -> Theorem -> Either String Theorem
 rule4 pos (Theorem t@(M:xs))
   | getSegment (pos-1) 2 xs == (Right $readLetters "UU") = Theorem <$> (Right (M:) <*> replaceSegment (pos-1) 2 xs [])
 rule4 pos t = Left $ "Cannot apply (IV) to " ++ (show t) ++ " at " ++ show pos
+
+
+deriveNextTheorems :: Theorem -> Either String [Theorem]
+deriveNextTheorems t@(Theorem ls) = sequenceA $ filter isRight $ rules <*> pure t
+  where rules = concat [ [rule1]
+                       , [rule2]
+                       , [rule3 pos | pos <- [0..length ls]]
+                       , [rule4 pos | pos <- [0..length ls]]
+                       ]
+
+deriveTheorems :: Either String [Theorem] -> Either String [[Theorem]]
+deriveTheorems ts = join $ (traverse deriveNextTheorems) <$> ts
 
 
 -- TODO:

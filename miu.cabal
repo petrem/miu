@@ -30,6 +30,7 @@ library
       Lib
       Miu
   other-modules:
+      Theorem
       Paths_miu
   hs-source-dirs:
       src
